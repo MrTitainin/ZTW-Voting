@@ -44,20 +44,20 @@ def apiLoginUser():
         result['message']="User does not exist"
         return jsonify(result)
     
-    if((user["login"]!=login) or (user["password"]!=password)):
+    if((user["FullName"]!=login) or (user["Password"]!=password)):
         result['message']= "wrong login or password"
         return jsonify(result)
     
-    result['sessionKey']=generateSessionKey(login)
+    result['sessionKey']=generateSessionKey(user['UserId'])
     result['electionList']=dbConn.getElectionList(login)
     return jsonify(result)     #"Login successfull"
 
 
-def generateSessionKey(login)->str:
+def generateSessionKey(userId)->str:
     key=""
     for i in range(0,SESSION_KEY_LENGTH):
         key+=f"{random.randint(0,9)}"
-    sessionKeys[key]=login
+    sessionKeys[key]=userId
     return key
 
 
