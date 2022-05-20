@@ -185,7 +185,21 @@ def apiElectionEnd():
 
 @server.route('/api/elections/results', methods=['POST'])
 def apigetElectionResults():
-    pass
+    data=request.form
+    if not 'sessionKey' in data or not 'electionId' in data:
+        return "Error: Request missing data"
+
+    if data['sessionKey']=='' or data['electionId']=='':
+        return "Error: Wrong data"
+
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        return "Error: Non existant session"
+
+    result=dbConn.getResult(data['electionId'])
+    if result is None:
+        return "Error: Results could not be retrieved"
+    return result
 
 
 

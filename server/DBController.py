@@ -215,6 +215,44 @@ class DBController():
         return True
 
         
+    def getResult(self,electionId)->Optional[dict]:
+        conn = self.engine.connect()
+
+        query=sqla.select([self.elections]).where(self.elections.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultElection = resultProxy.fetchall()
+        
+        query=sqla.select([self.options]).where(self.options.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultOptions = resultProxy.fetchall()
+
+        if len(resultElection)==0 or len(resultOptions)==0:
+            return None
+        if not resultElection[0]['Finished']:
+            return None
+
+        result={}
+        result['electionId']=resultElection[0]['ElectionId']
+        result['electionName']=resultElection[0]['Name']
+        result['finished']=resultElection[0]['Finished']
+        if resultElection[0]['VoteType'] ==VoteType.SINGLE:
+            result['VoteType']='single'
+        if resultElection[0]['VoteType'] ==VoteType.APPROVAL:
+            result['voteType']='approval'
+        result['options']=[]
+        for option in resultOptions:
+            query=sqla.select([self.votes]).where(self.votes.columns.ElectionId == electionId)
+            query=query.where(self.votes.columns.Selected == option['OptionId'])
+            resultProxy = conn.execute(query)
+            resultCount = len(resultProxy.fetchall())
+            result['options'].append({
+                'optionId':option['OptionId'],
+                'optionName':option['Name'],
+                'voteCount':resultCount
+            })
+
+        conn.close()
+        return result
 
 
     def fillDefault(self):
