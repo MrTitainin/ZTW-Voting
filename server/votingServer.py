@@ -183,7 +183,6 @@ def apiElectionEnd():
     return 'success'
 
 
-
 @server.route('/api/elections/results', methods=['POST'])
 def apigetElectionResults():
     pass

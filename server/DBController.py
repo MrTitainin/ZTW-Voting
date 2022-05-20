@@ -9,6 +9,8 @@ class DBController():
     def __init__(self):
         if os.path.exists(DATABASE_FILE_PATH+DATABASE_FILE_NAME):
             os.remove(DATABASE_FILE_PATH+DATABASE_FILE_NAME)
+        if os.path.exists(DATABASE_FILE_PATH+DATABASE_FILE_NAME+'-journal'):
+            os.remove(DATABASE_FILE_PATH+DATABASE_FILE_NAME+'-journal')
         self.engine = sqla.create_engine('sqlite:///'+DATABASE_FILE_PATH+DATABASE_FILE_NAME)
         conn = self.engine.connect()
         metadata = sqla.MetaData()
