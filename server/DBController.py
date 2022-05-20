@@ -2,10 +2,13 @@ from enum import unique
 from typing import Optional
 import sqlalchemy as sqla
 from constants import *
+import os
 import json
 
 class DBController():
     def __init__(self):
+        if os.path.exists(DATABASE_FILE_PATH+DATABASE_FILE_NAME):
+            os.remove(DATABASE_FILE_PATH+DATABASE_FILE_NAME)
         self.engine = sqla.create_engine('sqlite:///'+DATABASE_FILE_PATH+DATABASE_FILE_NAME)
         conn = self.engine.connect()
         metadata = sqla.MetaData()
@@ -68,6 +71,18 @@ class DBController():
         if len(resultSet)==0:
             return False
         return resultSet[0]['AdministrativeRight']
+
+
+    def isVoter(self,userId)->bool:
+        conn = self.engine.connect()
+        query=sqla.select([self.users]).where(self.users.columns.UserId == userId)
+        resultProxy = conn.execute(query)
+        resultSet = resultProxy.fetchall()
+        conn.close()
+
+        if len(resultSet)==0:
+            return False
+        return resultSet[0]['AllowedToVote']
         
 
     def getElectionList(self,userId)->list[tuple]:
@@ -139,8 +154,44 @@ class DBController():
             result['VoteType']='approval'
         result['options']=[]
         for option in resultOptions:
-            result['options'].append(option['Name'])
+            result['options'].append({'optionId':option['OptionId'],'optionName':option['Name']})
         return result
+
+
+    def addVote(self,userId,electionId,optionIds)->bool:
+        conn=self.engine.connect()
+
+        query=sqla.select([self.voted]).where(self.voted.columns.UserId == userId)
+        query=query.where(self.voted.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultSet = resultProxy.fetchall()
+
+        if len(resultSet)!=0:
+            return False
+
+        query=sqla.select([self.elections]).where(self.elections.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultSet = resultProxy.fetchall()
+
+        if len(resultSet)==0:
+            return False
+        voteType=resultSet[0]['VoteType']
+
+        if voteType==VoteType.SINGLE and len(optionIds)!=1:
+            return False
+        elif voteType==VoteType.APPROVAL and len(optionIds)==0:
+            return False
+
+        for optionId in optionIds:
+            query = sqla.insert(self.votes).values(Selected=optionId,ElectionId=electionId)
+            resultProxy = conn.execute(query)
+        query = sqla.insert(self.voted).values(UserId=userId,ElectionId=electionId)
+        resultProxy = conn.execute(query)
+
+        conn.close()
+        return True
+
+
 
 
     def fillDefault(self):

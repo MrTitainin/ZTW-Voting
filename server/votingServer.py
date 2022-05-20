@@ -141,7 +141,25 @@ def apiGetElectionDetails():
 
 @server.route('/api/elections/vote', methods=['POST'])
 def apiVote():
-    pass
+    data=request.json
+    if (not 'sessionKey' in data or 
+        not 'electionId' in data or 
+        not 'optionIds' in data):
+        return "Error: Request missing data"
+
+    if (data['sessionKey']=='' or
+        len(data['optionIds'])==0):
+        return "Error: Wrong data"
+    
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        return "Error: Non existant session"    
+    if not dbConn.isVoter(userId):
+        return "No voting rights"
+
+    if not dbConn.addVote(userId,data['electionId'],data['optionIds']):
+        return "Error: Option insert error"
+    return "success"
 
 
 @server.route('/api/elections/end', methods=['POST'])
