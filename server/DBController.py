@@ -24,6 +24,7 @@ class DBController():
         self.elections = sqla.Table('Election', metadata,
             sqla.Column('ElectionId', sqla.Integer,primary_key=True),
             sqla.Column('Name', sqla.String(255),nullable=False),
+            sqla.Column('Finished', sqla.Boolean, default=False),
             sqla.Column('VoteType', sqla.Enum(VoteType), default=VoteType.SINGLE)
         )
 
@@ -192,6 +193,26 @@ class DBController():
         return True
 
 
+    def endElection(self,electionId)->bool:
+        conn = self.engine.connect()
+
+        query=sqla.select([self.elections]).where(self.elections.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultElection = resultProxy.fetchall()
+        
+        if len(resultElection)==0:
+            return False
+        if resultElection[0]['Finished']:
+            return False
+        
+        query=sqla.update(self.elections).values(Finished=True)
+        query=query.where(self.elections.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+
+        conn.close()
+        return True
+
+        
 
 
     def fillDefault(self):

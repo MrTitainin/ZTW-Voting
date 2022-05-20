@@ -164,7 +164,24 @@ def apiVote():
 
 @server.route('/api/elections/end', methods=['POST'])
 def apiElectionEnd():
-    pass
+    data=request.form
+    if not 'sessionKey' in data or not 'electionId' in data:
+        return "Error: Request missing data"
+
+    if data['sessionKey']=='' or data['electionId']=='':
+        return "Error: Wrong data"
+
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        return "Error: Non existant session"
+
+    if not dbConn.isAdmin(userId):
+        return "No admin rights"
+
+    if not dbConn.endElection(data['electionId']):
+        return "Error: Can not End election"
+    return 'success'
+
 
 
 @server.route('/api/elections/results', methods=['POST'])
