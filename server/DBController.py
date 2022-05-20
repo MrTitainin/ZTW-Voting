@@ -2,6 +2,7 @@ from enum import unique
 from typing import Optional
 import sqlalchemy as sqla
 from constants import *
+import json
 
 class DBController():
     def __init__(self):
@@ -55,8 +56,19 @@ class DBController():
         if len(resultSet)==0:
             return None
         return resultSet[0]
-        
 
+
+    def isAdmin(self,userId)->bool:
+        conn = self.engine.connect()
+        query=sqla.select([self.users]).where(self.users.columns.UserId == userId)
+        resultProxy = conn.execute(query)
+        resultSet = resultProxy.fetchall()
+        conn.close()
+
+        if len(resultSet)==0:
+            return False
+        return resultSet[0]['AdministrativeRight']
+        
 
     def getElectionList(self,userId)->list[tuple]:
         conn = self.engine.connect()
@@ -82,13 +94,53 @@ class DBController():
         return result
 
 
+    def addElection(self,electionName,voteType)->Optional[int]:
+        conn=self.engine.connect()
+        query = sqla.insert(self.elections).values(Name=electionName,VoteType=voteType)
+        resultProxy = conn.execute(query)
+        result=resultProxy.inserted_primary_key
+        conn.close()
+        return result[0]
 
 
+    def addOptions(self,electionId,options)->list[int]:
+        result=[]
+        conn=self.engine.connect()
+        for i,option in enumerate(options):
+            query = sqla.insert(self.options).values(OptionId=i,ElectionId=electionId,Name=option)
+            resultProxy = conn.execute(query)
+            result.append(resultProxy.inserted_primary_key)
+        conn.close()
+        return result
 
 
+    def getElectionDetails(self,electionId)->Optional[dict]:
+        conn = self.engine.connect()
 
+        query=sqla.select([self.elections]).where(self.elections.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultElection = resultProxy.fetchall()
 
+        query=sqla.select([self.options]).where(self.options.columns.ElectionId == electionId)
+        resultProxy = conn.execute(query)
+        resultOptions = resultProxy.fetchall()
+        
+        conn.close()
 
+        if len(resultElection)==0 or len(resultOptions)==0:
+            return None
+        
+        result={}
+        for key in resultElection[0].keys():
+            result[key]=resultElection[0][key]
+        if result['VoteType']==VoteType.SINGLE:
+            result['VoteType']='single'
+        if result['VoteType']==VoteType.APPROVAL:
+            result['VoteType']='approval'
+        result['options']=[]
+        for option in resultOptions:
+            result['options'].append(option['Name'])
+        return result
 
 
     def fillDefault(self):
@@ -98,21 +150,21 @@ class DBController():
         resultProxy = conn.execute(query)
         resultSet = resultProxy.fetchall()
         if (len(resultSet)==0):
-            query = sqla.insert(self.users).values(FullName="aaa", Password="aaa",AdministrativeRight=True,AllowedToVote=True)
+            query = sqla.insert(self.users).values(UserId=0,FullName="aaa", Password="aaa",AdministrativeRight=True,AllowedToVote=True)
             resultProxy = conn.execute(query)
 
         query=sqla.select([self.users]).where(self.users.columns.FullName == "bbb")
         resultProxy = conn.execute(query)
         resultSet = resultProxy.fetchall()
         if (len(resultSet)==0):
-            query = sqla.insert(self.users).values(FullName="bbb", Password="bbb",AdministrativeRight=True,AllowedToVote=False)
+            query = sqla.insert(self.users).values(UserId=1,FullName="bbb", Password="bbb",AdministrativeRight=True,AllowedToVote=False)
             resultProxy = conn.execute(query)
 
         query=sqla.select([self.users]).where(self.users.columns.FullName == "ccc")
         resultProxy = conn.execute(query)
         resultSet = resultProxy.fetchall()
         if (len(resultSet)==0):
-            query = sqla.insert(self.users).values(FullName="ccc", Password="ccc",AdministrativeRight=False,AllowedToVote=True)
+            query = sqla.insert(self.users).values(UserId=2,FullName="ccc", Password="ccc",AdministrativeRight=False,AllowedToVote=True)
             resultProxy = conn.execute(query)
 
         query=sqla.select([self.elections]).where(self.elections.columns.ElectionId == 0)
@@ -136,7 +188,7 @@ class DBController():
             query = sqla.insert(self.options).values(OptionId=1,ElectionId=0,Name='Election 0 Option 1')
             resultProxy = conn.execute(query)
 
-        query=sqla.select([self.options]).where(self.options.columns.ElectionId == 0).where(self.options.columns.OptionId == 1)
+        query=sqla.select([self.options]).where(self.options.columns.ElectionId == 0).where(self.options.columns.OptionId == 2)
         resultProxy = conn.execute(query)
         resultSet = resultProxy.fetchall()
         if (len(resultSet)==0):

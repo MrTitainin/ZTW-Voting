@@ -5,7 +5,7 @@ from typing import Optional
 from DBController import DBController
 from constants import *
 
-sessionKeys={}
+sessionKeys={'testSessionKey':0}
 dbConn=DBController()
 server = flask.Flask(__name__)
 
@@ -31,21 +31,25 @@ def apiLoginUser():
     result['sessionKey']=None
 
     data=request.form
+    if not 'login' in data or not 'password' in data:
+        result['message']="Error: No login or password provided. Please specify a login and password."
+        return jsonify(result)
+
     login=data["login"]
     password=data["password"]
 
     if((login=="") or (password=="")):
-        result['message']="Error: No login or password provided. Please specify a login and password."
+        result['message']="Error: Login or Password empty. Please specify a login and password."
         return jsonify(result)
 
     user=dbConn.getUser(login)
     
     if user is None:
-        result['message']="User does not exist"
+        result['message']="Error: User does not exist"
         return jsonify(result)
     
     if((user["FullName"]!=login) or (user["Password"]!=password)):
-        result['message']= "wrong login or password"
+        result['message']= "Error: wrong login or password"
         return jsonify(result)
     
     result['sessionKey']=generateSessionKey(user['UserId'])
@@ -61,7 +65,7 @@ def generateSessionKey(userId)->str:
     return key
 
 
-def verifyUser(key)->Optional[str]:   #returns login of user
+def verifyUser(key)->Optional[str]:   #returns session key
     if(key==""):
         return None
     if key in sessionKeys:
@@ -71,7 +75,43 @@ def verifyUser(key)->Optional[str]:   #returns login of user
 
 @server.route('/api/elections/start', methods=['POST'])
 def apiElectionStart():
-    pass
+    data=request.json
+    if (not 'sessionKey' in data or 
+        not 'electionName' in data or 
+        not 'voteType' in data or 
+        not 'options' in data ):
+        return "Error: Request missing data"
+
+    if (data['sessionKey']=='' or
+        data['electionName']=='' or
+        (data['voteType']!='single' and data['voteType']!='approval')or 
+           len(data['options'])==0):
+        return "Error: Wrong data"
+    
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        return "Error: Non existant session"    
+    if not dbConn.isAdmin(userId):
+        return "No admin rights"
+
+    for option in data['options']:
+        if option =='':
+            return "Error: Wrong options"
+
+    voteType=None
+    if data['voteType']=='single':
+        voteType=VoteType.SINGLE
+    if data['voteType']=='approval':
+        voteType=VoteType.APPROVAL
+
+    electionId=dbConn.addElection(data['electionName'],voteType)
+    if electionId is None:
+        return "Error: Election insert error"
+    optionIds=dbConn.addOptions(electionId,data['options'])
+    if len(optionIds)!= len(data['options']):
+        return "Error: Option insert error"
+    
+    return "success"
 
 
 @server.route('/api/elections/list', methods=['POST'])
@@ -81,7 +121,22 @@ def apiGetElectionList():
 
 @server.route('/api/elections/details', methods=['POST'])
 def apiGetElectionDetails():
-    pass
+    data=request.form
+    if not 'sessionKey' in data or not 'electionId' in data:
+        return "Error: Request missing data"
+
+    if data['sessionKey']=='' or data['electionId']=='':
+        return "Error: Wrong data"
+
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        return "Error: Non existant session"
+
+    electionDetails=dbConn.getElectionDetails(data['electionId'])
+    if electionDetails is None:
+        return "Error: Election does not exist"
+    
+    return electionDetails
 
 
 @server.route('/api/elections/vote', methods=['POST'])
