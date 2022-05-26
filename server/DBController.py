@@ -150,11 +150,11 @@ class DBController():
         
         result={}
         for key in resultElection[0].keys():
-            result[key]=resultElection[0][key]
-        if result['VoteType']==VoteType.SINGLE:
-            result['VoteType']='single'
-        if result['VoteType']==VoteType.APPROVAL:
-            result['VoteType']='approval'
+            result[key[0].lower()+key[1:]]=resultElection[0][key]
+        if result['voteType']==VoteType.SINGLE:
+            result['voteType']='single'
+        if result['voteType']==VoteType.APPROVAL:
+            result['voteType']='approval'
         result['options']=[]
         for option in resultOptions:
             result['options'].append({'optionId':option['OptionId'],'optionName':option['Name']})
@@ -236,7 +236,7 @@ class DBController():
         result['electionName']=resultElection[0]['Name']
         result['finished']=resultElection[0]['Finished']
         if resultElection[0]['VoteType'] ==VoteType.SINGLE:
-            result['VoteType']='single'
+            result['voteType']='single'
         if resultElection[0]['VoteType'] ==VoteType.APPROVAL:
             result['voteType']='approval'
         result['options']=[]
