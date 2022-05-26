@@ -275,9 +275,10 @@ def apiElectionEnd():
     return jsonify(result)
 
 
-# arguments in request form:
+# arguments in request path:
+#   - <electionId> -> string of int, id of finished election
+# arguments in request data:
 #   - 'sessionKey' -> string, users unique session key
-#   - 'electionId' -> int, id of finished election
 # return on success:
 #   - 'electionId' -> int, id of election
 #   - 'finished' -> true, status of election - has to be finished
@@ -287,9 +288,10 @@ def apiElectionEnd():
 #       - 'optionId' -> int, id of available option
 #       - 'optionName' -> string, name of available option
 #       - 'voteCount' -> int, total amount of votes for option
-@server.route('/api/elections/results', methods=['POST'])
-def apiGetElectionResults():
-    data=request.form
+@server.route('/api/elections/results/<electionId>', methods=['GET'])
+def apiGetElectionResults(electionId):
+    data=request.json
+    data['electionId']=int(electionId)
     result={}
     if not 'sessionKey' in data or not 'electionId' in data:
         result['success']=False
