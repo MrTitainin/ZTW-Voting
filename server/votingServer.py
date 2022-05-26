@@ -236,12 +236,12 @@ def apiVote():
     return jsonify(result)
 
 
-# arguments in request form:
+# arguments in request data:
 #   - 'sessionKey' -> string, users unique session key
 #   - 'electionId' -> int, id of election to close
-@server.route('/api/elections/end', methods=['POST'])
+@server.route('/api/elections/end', methods=['PATCH'])
 def apiElectionEnd():
-    data=request.form
+    data=request.json
     result={}
     if not 'sessionKey' in data or not 'electionId' in data:
         result['success']=False
