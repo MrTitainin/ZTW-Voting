@@ -158,9 +158,10 @@ def apiGetElectionList():
     pass
 
 
-# arguments in request form:
+# arguments in request path:
+#   - <electionId> -> string of int, id of election
+# arguments in request data:
 #   - 'sessionKey' -> string, users unique session key
-#   - 'electionId' -> int, id of election
 # return on success:
 #   - 'electionId' -> int, id of election
 #   - 'finished' -> true | false, status of election 
@@ -169,9 +170,10 @@ def apiGetElectionList():
 #   - 'options' -> list of dict, List of options for election as:
 #       - 'optionId' -> int, id of available option
 #       - 'optionName' -> string, name of available option
-@server.route('/api/elections/details', methods=['POST'])
-def apiGetElectionDetails():
-    data=request.form
+@server.route('/api/elections/details/<electionId>', methods=['GET'])
+def apiGetElectionDetails(electionId):
+    data=request.json
+    data['electionId']=int(electionId)
     result={}
     if not 'sessionKey' in data or not 'electionId' in data:
         result['success']=False
