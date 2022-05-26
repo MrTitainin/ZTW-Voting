@@ -28,6 +28,9 @@ def apiRegisterUser():
     pass
     
 
+# arguments in request form:
+#   - 'login' -> string, unikalny login uzytkownika
+#   - 'password' -> string, haslo uzytkownika
 # return on success:
 #   - 'sessionKey' -> string, unique key of session
 #   - 'electionList' -> list of dicts, available elections for user as:
@@ -88,6 +91,11 @@ def verifyUser(key)->Optional[str]:   #for sessionKey returns UserId
     return None
 
 
+# arguments in request data:
+#   - 'sessionKey' -> string, users unique session key
+#   - 'electionName' -> string, name of new elction
+#   - 'voteType' -> lower case string of VoteType of new election
+#   - 'options' ->list of string, list of available options for election
 @server.route('/api/elections/start', methods=['POST'])
 def apiElectionStart():
     data=request.json
@@ -150,6 +158,9 @@ def apiGetElectionList():
     pass
 
 
+# arguments in request form:
+#   - 'sessionKey' -> string, users unique session key
+#   - 'electionId' -> int, id of election
 # return on success:
 #   - 'electionId' -> int, id of election
 #   - 'finished' -> true | false, status of election 
@@ -187,6 +198,10 @@ def apiGetElectionDetails():
     return electionDetails
 
 
+# arguments in request data:
+#   - 'sessionKey' -> string, users unique session key
+#   - 'electionId' -> int, id of election
+#   - optionIds -> list of int, list of setected options
 @server.route('/api/elections/vote', methods=['POST'])
 def apiVote():
     data=request.json
@@ -221,6 +236,9 @@ def apiVote():
     return jsonify(result)
 
 
+# arguments in request form:
+#   - 'sessionKey' -> string, users unique session key
+#   - 'electionId' -> int, id of election to close
 @server.route('/api/elections/end', methods=['POST'])
 def apiElectionEnd():
     data=request.form
@@ -255,6 +273,9 @@ def apiElectionEnd():
     return jsonify(result)
 
 
+# arguments in request form:
+#   - 'sessionKey' -> string, users unique session key
+#   - 'electionId' -> int, id of finished election
 # return on success:
 #   - 'electionId' -> int, id of election
 #   - 'finished' -> true, status of election - has to be finished
