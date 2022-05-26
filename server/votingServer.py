@@ -10,8 +10,15 @@ dbConn=DBController()
 server = flask.Flask(__name__)
 
 
+# Request return format
+# Json dict containing:
+#   - 'success' -> result of request - true or false
+#   - 'message' -> error message, provided only if 'success' is false
+#   - additional request data appropriate for request
 
-@server.route('/', methods=['GET','POST'])  #test
+
+# useless, only for connection testing
+@server.route('/', methods=['GET','POST'])
 def home():
     return '''<h1>Voting server</h1><p>hello</p>'''
 
@@ -21,10 +28,13 @@ def apiRegisterUser():
     pass
     
 
-# returns dict:
-# 'sessionKey' -> string | None if failed login
-# 'electionList' -> list of tuples (electionId, electionName), not provided if fail login
-# 'message' -> reason for failed login, only provided on fail login
+# return on success:
+#   - 'sessionKey' -> string, unique key of session
+#   - 'electionList' -> list of dicts, available elections for user as:
+#       - 'electionId' -> int, id of available election
+#       - 'electionName' -> string, name of available election
+# return on No success:
+#   - 'sessionKey' -> None
 @server.route('/api/users/login', methods=['POST'])
 def apiLoginUser():
     result={}
@@ -140,6 +150,14 @@ def apiGetElectionList():
     pass
 
 
+# return on success:
+#   - 'electionId' -> int, id of election
+#   - 'finished' -> true | false, status of election 
+#   - 'electionName' -> string, name of election
+#   - voteType -> lower case string of VoteType, election voting type
+#   - 'options' -> list of dict, List of options for election as:
+#       - 'optionId' -> int, id of available option
+#       - 'optionName' -> string, name of available option
 @server.route('/api/elections/details', methods=['POST'])
 def apiGetElectionDetails():
     data=request.form
@@ -237,6 +255,15 @@ def apiElectionEnd():
     return jsonify(result)
 
 
+# return on success:
+#   - 'electionId' -> int, id of election
+#   - 'finished' -> true, status of election - has to be finished
+#   - 'electionName' -> string, name of election
+#   - voteType -> lower case string of VoteType, election voting type
+#   - 'options' -> list of dict, List of options for election as:
+#       - 'optionId' -> int, id of available option
+#       - 'optionName' -> string, name of available option
+#       - 'voteCount' -> int, total amount of votes for option
 @server.route('/api/elections/results', methods=['POST'])
 def apiGetElectionResults():
     data=request.form

@@ -1,9 +1,7 @@
-from enum import unique
 from typing import Optional
 import sqlalchemy as sqla
 from constants import *
 import os
-import json
 
 class DBController():
     def __init__(self):
@@ -88,7 +86,7 @@ class DBController():
         return resultSet[0]['AllowedToVote']
         
 
-    def getElectionList(self,userId)->list[tuple]:
+    def getElectionList(self,userId)->dict:
         conn = self.engine.connect()
         
         query=sqla.select([self.elections])
@@ -101,11 +99,12 @@ class DBController():
         
         conn.close()
 
-        result=[]
+        result={}
         voted=list(map(lambda res:res['ElectionId'],resultSet2))
         for election in resultSet1:
             if not election['ElectionId'] in voted:
-                result.append((election['ElectionId'],election['Name']))
+                result['electionId']=election['ElectionId']
+                result['electionName']=election['Name']
         
         if len(result)==0:
             return None
@@ -158,6 +157,8 @@ class DBController():
         result['options']=[]
         for option in resultOptions:
             result['options'].append({'optionId':option['OptionId'],'optionName':option['Name']})
+        result['electionName']=result['name']
+        result.pop('name')
         return result
 
 
