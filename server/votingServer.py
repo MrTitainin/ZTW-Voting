@@ -11,7 +11,7 @@ server = flask.Flask(__name__)
 
 
 
-@server.route('/', methods=['GET','post'])  #test
+@server.route('/', methods=['GET','POST'])  #test
 def home():
     return '''<h1>Voting server</h1><p>hello</p>'''
 
@@ -32,6 +32,7 @@ def apiLoginUser():
 
     data=request.form
     if not 'login' in data or not 'password' in data:
+        result['success']=False
         result['message']="Error: No login or password provided. Please specify a login and password."
         return jsonify(result)
 
@@ -39,22 +40,26 @@ def apiLoginUser():
     password=data["password"]
 
     if((login=="") or (password=="")):
+        result['success']=False
         result['message']="Error: Login or Password empty. Please specify a login and password."
         return jsonify(result)
 
     user=dbConn.getUser(login)
     
     if user is None:
+        result['success']=False
         result['message']="Error: User does not exist"
         return jsonify(result)
     
     if((user["FullName"]!=login) or (user["Password"]!=password)):
+        result['success']=False
         result['message']= "Error: wrong login or password"
         return jsonify(result)
     
+    result['success']=True
     result['sessionKey']=generateSessionKey(user['UserId'])
     result['electionList']=dbConn.getElectionList(login)
-    return jsonify(result)     #"Login successfull"
+    return jsonify(result)
 
 
 def generateSessionKey(userId)->str:
@@ -65,7 +70,7 @@ def generateSessionKey(userId)->str:
     return key
 
 
-def verifyUser(key)->Optional[str]:   #returns session key
+def verifyUser(key)->Optional[str]:   #for sessionKey returns UserId
     if(key==""):
         return None
     if key in sessionKeys:
@@ -76,27 +81,38 @@ def verifyUser(key)->Optional[str]:   #returns session key
 @server.route('/api/elections/start', methods=['POST'])
 def apiElectionStart():
     data=request.json
+    result={}
     if (not 'sessionKey' in data or 
         not 'electionName' in data or 
         not 'voteType' in data or 
         not 'options' in data ):
-        return "Error: Request missing data"
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
 
     if (data['sessionKey']=='' or
         data['electionName']=='' or
         (data['voteType']!='single' and data['voteType']!='approval')or 
            len(data['options'])==0):
-        return "Error: Wrong data"
+        result['success']=False
+        result['message']="Error: Wrong data"
+        return jsonify(result)
     
     userId=verifyUser(data['sessionKey'])    
     if userId is None:
-        return "Error: Non existant session"    
+        result['success']=False
+        result['message']="Error: Non existant session"    
+        return jsonify(result)
     if not dbConn.isAdmin(userId):
-        return "No admin rights"
+        result['success']=False
+        result['message']="No admin rights"
+        return jsonify(result)
 
     for option in data['options']:
         if option =='':
-            return "Error: Wrong options"
+            result['success']=False
+            result['message']="Error: Wrong options"
+            return jsonify(result)
 
     voteType=None
     if data['voteType']=='single':
@@ -106,12 +122,17 @@ def apiElectionStart():
 
     electionId=dbConn.addElection(data['electionName'],voteType)
     if electionId is None:
-        return "Error: Election insert error"
+        result['success']=False
+        result['message']="Error: Election insert error"
+        return jsonify(result)
     optionIds=dbConn.addOptions(electionId,data['options'])
     if len(optionIds)!= len(data['options']):
-        return "Error: Option insert error"
+        result['success']=False
+        result['message']="Error: Option insert error"
+        return jsonify(result)
     
-    return "success"
+    result['success']=True
+    return jsonify(result)
 
 
 @server.route('/api/elections/list', methods=['POST'])
@@ -122,19 +143,28 @@ def apiGetElectionList():
 @server.route('/api/elections/details', methods=['POST'])
 def apiGetElectionDetails():
     data=request.form
+    result={}
     if not 'sessionKey' in data or not 'electionId' in data:
-        return "Error: Request missing data"
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
 
     if data['sessionKey']=='' or data['electionId']=='':
-        return "Error: Wrong data"
+        result['success']=False
+        result['message']= "Error: Wrong data"
+        return jsonify(result)
 
     userId=verifyUser(data['sessionKey'])    
     if userId is None:
-        return "Error: Non existant session"
+        result['success']=False
+        result['message']="Error: Non existant session"
+        return jsonify(result)
 
     electionDetails=dbConn.getElectionDetails(data['electionId'])
     if electionDetails is None:
-        return "Error: Election does not exist"
+        result['success']=False
+        result['message']="Error: Election does not exist"
+        return jsonify(result)
     
     return electionDetails
 
@@ -142,64 +172,99 @@ def apiGetElectionDetails():
 @server.route('/api/elections/vote', methods=['POST'])
 def apiVote():
     data=request.json
+    result={}
     if (not 'sessionKey' in data or 
         not 'electionId' in data or 
         not 'optionIds' in data):
-        return "Error: Request missing data"
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
 
     if (data['sessionKey']=='' or
         len(data['optionIds'])==0):
-        return "Error: Wrong data"
+        result['success']=False
+        result['message']="Error: Wrong data"
+        return jsonify(result)
     
     userId=verifyUser(data['sessionKey'])    
     if userId is None:
-        return "Error: Non existant session"    
+        result['success']=False
+        result['message']="Error: Non existant session"    
+        return jsonify(result)
     if not dbConn.isVoter(userId):
         return "No voting rights"
 
     if not dbConn.addVote(userId,data['electionId'],data['optionIds']):
-        return "Error: Option insert error"
-    return "success"
+        result['success']=False
+        result['message']="Error: Option insert error"
+        return jsonify(result)
+    
+    result['success']=True
+    return jsonify(result)
 
 
 @server.route('/api/elections/end', methods=['POST'])
 def apiElectionEnd():
     data=request.form
+    result={}
     if not 'sessionKey' in data or not 'electionId' in data:
-        return "Error: Request missing data"
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
 
     if data['sessionKey']=='' or data['electionId']=='':
-        return "Error: Wrong data"
+        result['success']=False
+        result['message']="Error: Wrong data"
+        return jsonify(result)
 
     userId=verifyUser(data['sessionKey'])    
     if userId is None:
-        return "Error: Non existant session"
+        result['success']=False
+        result['message']="Error: Non existant session"
+        return jsonify(result)
 
     if not dbConn.isAdmin(userId):
-        return "No admin rights"
+        result['success']=False
+        result['message']="No admin rights"
+        return jsonify(result)
 
     if not dbConn.endElection(data['electionId']):
-        return "Error: Can not End election"
-    return 'success'
+        result['success']=False
+        result['message']="Error: Can not End election"
+        return jsonify(result)
+    
+    result['success']=True
+    return jsonify(result)
 
 
 @server.route('/api/elections/results', methods=['POST'])
-def apigetElectionResults():
+def apiGetElectionResults():
     data=request.form
+    result={}
     if not 'sessionKey' in data or not 'electionId' in data:
-        return "Error: Request missing data"
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
 
     if data['sessionKey']=='' or data['electionId']=='':
-        return "Error: Wrong data"
+        result['success']=False
+        result['message']="Error: Wrong data"
+        return jsonify(result)
 
     userId=verifyUser(data['sessionKey'])    
     if userId is None:
-        return "Error: Non existant session"
+        result['success']=False
+        result['message']="Error: Non existant session"
+        return jsonify(result)
 
     result=dbConn.getResult(data['electionId'])
     if result is None:
-        return "Error: Results could not be retrieved"
-    return result
+        result={}
+        result['success']=False
+        result['message']="Error: Results could not be retrieved"
+        return jsonify(result)
+    result['success']=True
+    return jsonify(result)
 
 
 
