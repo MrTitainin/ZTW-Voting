@@ -110,7 +110,7 @@ def apiElectionStart():
 
     if (data['sessionKey']=='' or
         data['electionName']=='' or
-        (data['voteType']!='single' and data['voteType']!='approval')or 
+        (data['voteType']!=str(VoteType.SINGLE) and data['voteType']!=str(VoteType.APPROVAL))or 
            len(data['options'])==0):
         result['success']=False
         result['message']="Error: Wrong data"
@@ -133,9 +133,9 @@ def apiElectionStart():
             return jsonify(result)
 
     voteType=None
-    if data['voteType']=='single':
+    if data['voteType']==str(VoteType.SINGLE):
         voteType=VoteType.SINGLE
-    if data['voteType']=='approval':
+    if data['voteType']==str(VoteType.APPROVAL):
         voteType=VoteType.APPROVAL
 
     electionId=dbConn.addElection(data['electionName'],voteType)

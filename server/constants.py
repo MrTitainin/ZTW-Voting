@@ -13,3 +13,6 @@ class VoteType(Enum):
     SINGLE=0
     APPROVAL=1
 
+    def __str__(self):
+        return self.name.lower()
+

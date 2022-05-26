@@ -151,9 +151,9 @@ class DBController():
         for key in resultElection[0].keys():
             result[key[0].lower()+key[1:]]=resultElection[0][key]
         if result['voteType']==VoteType.SINGLE:
-            result['voteType']='single'
+            result['voteType']=str(VoteType.SINGLE)
         if result['voteType']==VoteType.APPROVAL:
-            result['voteType']='approval'
+            result['voteType']=str(VoteType.APPROVAL)
         result['options']=[]
         for option in resultOptions:
             result['options'].append({'optionId':option['OptionId'],'optionName':option['Name']})
@@ -237,9 +237,9 @@ class DBController():
         result['electionName']=resultElection[0]['Name']
         result['finished']=resultElection[0]['Finished']
         if resultElection[0]['VoteType'] ==VoteType.SINGLE:
-            result['voteType']='single'
+            result['voteType']=str(VoteType.SINGLE)
         if resultElection[0]['VoteType'] ==VoteType.APPROVAL:
-            result['voteType']='approval'
+            result['voteType']=str(VoteType.APPROVAL)
         result['options']=[]
         for option in resultOptions:
             query=sqla.select([self.votes]).where(self.votes.columns.ElectionId == electionId)
