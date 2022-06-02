@@ -1,7 +1,9 @@
 <template>
-    <LoginPanel/>
-    <ElectionChoice :elections=this.elections />
-    <ElectionPanel :election=this.elections[0] :options=this.electionOptions />
+    <div>
+        <LoginPanel @user:login="login" v-if="user==0"/>
+        <ElectionChoice @election:vote="showVoting" @election:results="showResults" :elections=this.elections v-if="user!=0 && selectedElection == 0"/>
+        <ElectionPanel @vote:submit="submitVote" :election=this.elections[0] :options=this.electionOptions v-if="selectedElection!=0"/>
+    </div>
 </template>
 
 <script>
@@ -22,7 +24,7 @@ export default {
                     id: 1,
                     name: 'Wybory test',
                     active: true,
-                    multipleChoice: true,
+                    multipleChoice: false,
                 },
                 {
                     id: 2,
@@ -40,10 +42,31 @@ export default {
                     id: 2,
                     description: 'Opcja 2',
                 },
-            ]
+            ],
+            selectedElection: 0,
+            user: 0
         }
     },
     props: {
+    },
+    methods: {
+        login(usr) {
+            this.user = usr
+        },
+        showVoting(election) {
+            // TODO options request
+            this.selectedElection = election
+        },
+        showResults(election) {
+            // TODO
+            election.name
+        },
+        submitVote(options, selected) {
+            this.selectedElection = 0
+            options[0].description
+            selected
+            // TODO do it
+        },
     }
 }
 </script>
