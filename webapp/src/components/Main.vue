@@ -108,11 +108,31 @@ export default {
             }
             //election.name
         },
-        submitVote(options, selected) {
+        async submitVote(options, selected) {
+            if (!Array.isArray(selected))
+                selected=[selected]
+            try {
+                const response = await fetch("http://localhost:5123/api/elections/vote",{
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        sessionKey:this.user.sessionKey,
+                        electionId:this.selectedElection.id,
+                        optionIds:selected
+                    }),
+                });
+                const data = await response.json();
+                document.write(JSON.stringify(data))
+                if (data.success){
+                    this.electionResults=data
+                }
+            } catch (error) {
+                console.error(error);
+            }
             this.selectedElection = 0
-            options[0].description
-            selected
-            // TODO do it
         },
     }
 }
