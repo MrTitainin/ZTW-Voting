@@ -124,7 +124,6 @@ export default {
                     }),
                 });
                 const data = await response.json();
-                document.write(JSON.stringify(data))
                 if (data.success){
                     this.electionResults=data
                 }
@@ -132,6 +131,42 @@ export default {
                 console.error(error);
             }
             this.selectedElection = 0
+        },
+        async startElection(election) {
+            //TODO remap reqData
+            reqData={...election}
+            reqData.sessionKey=this.user.sessionKey
+            try {
+                const response = await fetch("http://localhost:5123/api/elections/start",{
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(reqData),
+                });
+                const data = await response.json();
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        async endElection(electionId) {
+            try {
+                const response = await fetch("http://localhost:5123/api/elections/end",{
+                    method: "PATCH",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        sessionKey:this.user.sessionKey,
+                        electionId:electionId
+                    }),
+                });
+                const data = await response.json();
+            } catch (error) {
+                console.error(error);
+            }
         },
     }
 }
