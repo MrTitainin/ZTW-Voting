@@ -43,6 +43,7 @@ export default {
                     description: 'Opcja 2',
                 },
             ],
+            electionResults:{},
             selectedElection: 0,
             user: 0
         }
@@ -87,9 +88,25 @@ export default {
             }
             //this.selectedElection = election
         },
-        showResults(election) {
-            // TODO
-            election.name
+        async showResults(election) {
+            try {
+                const response = await fetch("http://localhost:5123/api/elections/results/"+election.id,{
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({sessionKey:this.user.sessionKey}),
+                });
+                const data = await response.json();
+                if (data.success){
+                    this.electionResults=data
+                    document.write(JSON.stringify(this.electionResults))
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            //election.name
         },
         submitVote(options, selected) {
             this.selectedElection = 0

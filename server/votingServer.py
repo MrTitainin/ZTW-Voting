@@ -291,7 +291,7 @@ def apiElectionEnd():
 #       - 'optionId' -> int, id of available option
 #       - 'optionName' -> string, name of available option
 #       - 'voteCount' -> int, total amount of votes for option
-@server.route('/api/elections/results/<electionId>', methods=['GET'])
+@server.route('/api/elections/results/<electionId>', methods=['POST'])
 def apiGetElectionResults(electionId):
     data=request.json
     data['electionId']=int(electionId)
