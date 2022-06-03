@@ -9,6 +9,8 @@
 </template>
 
 <script>
+import config from '@/config';
+
 export default {
     name: 'LoginPanel',
     data() {
@@ -26,7 +28,7 @@ export default {
                 formData.append('login', this.user.login);
                 formData.append('password', this.user.password);
                 
-                const response = await fetch("http://localhost:5123/api/users/login", {
+                const response = await fetch(config.SERVICE_URL+"users/login", {
                 method: "POST",
                 
                 body: formData,

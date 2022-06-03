@@ -125,7 +125,7 @@ class DBController():
         return result[0]
 
 
-    def addOptions(self,electionId,options)->list[int]:
+    def addOptions(self,electionId,options):
         result=[]
         conn=self.engine.connect()
         for i,option in enumerate(options):

@@ -1,5 +1,5 @@
 FROM python
-WORKDIR .
+WORKDIR /server
 ENV FLASK_APP=votingServer.py
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt

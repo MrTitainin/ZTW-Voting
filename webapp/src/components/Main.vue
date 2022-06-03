@@ -7,9 +7,12 @@
 </template>
 
 <script>
+import config from '@/config'
+
 import LoginPanel from './Login.vue'
 import ElectionChoice from './ElectionChoice.vue'
 import ElectionPanel from './Election.vue'
+
 export default {
     name: 'MainScreen',
     components: {
@@ -66,7 +69,7 @@ export default {
         },
         async showVoting(election) {
             try {
-                const response = await fetch("http://localhost:5123/api/elections/details/"+election.id,{
+                const response = await fetch(config.SERVICE_URL+"elections/details/"+election.id,{
                     method: "POST",
                     headers: {
                         Accept: "application/json",
@@ -90,7 +93,7 @@ export default {
         },
         async showResults(election) {
             try {
-                const response = await fetch("http://localhost:5123/api/elections/results/"+election.id,{
+                const response = await fetch(config.SERVICE_URL+"elections/results/"+election.id,{
                     method: "POST",
                     headers: {
                         Accept: "application/json",
@@ -111,7 +114,7 @@ export default {
             if (!Array.isArray(selected))
                 selected=[selected]
             try {
-                const response = await fetch("http://localhost:5123/api/elections/vote",{
+                const response = await fetch(config.SERVICE_URL+"elections/vote",{
                     method: "POST",
                     headers: {
                         Accept: "application/json",
@@ -137,7 +140,7 @@ export default {
             const reqData={...election}
             reqData.sessionKey=this.user.sessionKey
             try {
-                const response = await fetch("http://localhost:5123/api/elections/start",{
+                const response = await fetch(config.SERVICE_URL+"elections/start",{
                     method: "POST",
                     headers: {
                         Accept: "application/json",
@@ -152,7 +155,7 @@ export default {
         },
         async endElection(electionId) {
             try {
-                const response = await fetch("http://localhost:5123/api/elections/end",{
+                const response = await fetch(config.SERVICE_URL+"elections/end",{
                     method: "PATCH",
                     headers: {
                         Accept: "application/json",
