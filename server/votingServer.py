@@ -171,7 +171,7 @@ def apiGetElectionList():
 #   - 'options' -> list of dict, List of options for election as:
 #       - 'optionId' -> int, id of available option
 #       - 'optionName' -> string, name of available option
-@server.route('/api/elections/details/<electionId>', methods=['GET'])
+@server.route('/api/elections/details/<electionId>', methods=['POST'])
 def apiGetElectionDetails(electionId):
     data=request.json
     data['electionId']=int(electionId)
@@ -198,6 +198,7 @@ def apiGetElectionDetails(electionId):
         result['message']="Error: Election does not exist"
         return jsonify(result)
     
+    electionDetails['success']=True
     return electionDetails
 
 

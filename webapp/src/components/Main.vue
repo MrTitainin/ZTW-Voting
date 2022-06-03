@@ -63,9 +63,29 @@ export default {
                     election.multipleChoice=false
             }
         },
-        showVoting(election) {
-            // TODO options request
-            this.selectedElection = election
+        async showVoting(election) {
+            try {
+                const response = await fetch("http://localhost:5123/api/elections/details/"+election.id,{
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({sessionKey:this.user.sessionKey}),
+                });
+                const data = await response.json();
+                if (data.success){
+                    this.electionOptions=data.options
+                    for(const option of this.electionOptions){
+                        option.id=option.optionId
+                        option.description=option.optionName
+                    }
+                    this.selectedElection = election
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            //this.selectedElection = election
         },
         showResults(election) {
             // TODO
