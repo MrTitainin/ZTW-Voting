@@ -80,7 +80,7 @@ export default {
                     for(const election of this.elections){
                         election.id=election.electionId
                         election.name=election.electionName
-                        election.active=election.electionFinished
+                        election.active=!election.electionFinished
                         election.votable=election.electionVotable
                         if (election.electionType=='approval')  
                             election.multipleChoice=true
