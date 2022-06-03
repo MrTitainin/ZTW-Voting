@@ -34,9 +34,7 @@ def apiRegisterUser():
 #   - 'password' -> string, haslo uzytkownika
 # return on success:
 #   - 'sessionKey' -> string, unique key of session
-#   - 'electionList' -> list of dicts, available elections for user as:
-#       - 'electionId' -> int, id of available election
-#       - 'electionName' -> string, name of available election
+#   - 'admin' -> bool, user is admin
 # return on No success:
 #   - 'sessionKey' -> None
 @server.route('/api/users/login', methods=['POST'])
@@ -72,9 +70,6 @@ def apiLoginUser():
     
     result['success']=True
     result['sessionKey']=generateSessionKey(user['UserId'])
-    result['electionList']=dbConn.getElectionList(user['UserId'])
-    if result['electionList'] is None:
-        result['electionList']=[]
     result['admin']=dbConn.isAdmin(user['UserId'])
     return jsonify(result)
 
@@ -157,9 +152,41 @@ def apiElectionStart():
     return jsonify(result)
 
 
+# arguments in request data:
+#   - 'sessionKey' -> string, users unique session key
+# return on success:
+#   - 'electionList' -> list of dicts, available elections for user as:
+#       - 'electionId' -> int, id of available election
+#       - 'electionName' -> string, name of available election
+#       - 'electionActive' -> bool, finished or not
+#       - 'electionType' -> string, string of voteType
+#       - 'electionVotable' -> bool, can user vote
 @server.route('/api/elections/list', methods=['POST'])
 def apiGetElectionList():
-    pass
+    data=request.json
+    result={}
+    if not 'sessionKey' in data:
+        result['success']=False
+        result['message']="Error: Request missing data"
+        return jsonify(result)
+
+    if data['sessionKey']=='':
+        result['success']=False
+        result['message']= "Error: Wrong data"
+        return jsonify(result)
+
+    userId=verifyUser(data['sessionKey'])    
+    if userId is None:
+        result['success']=False
+        result['message']="Error: Non existant session"
+        return jsonify(result)
+
+    result['electionList']=dbConn.getElectionList(userId)
+    if result['electionList'] is None:
+        result['electionList']=[]
+    
+    result['success']=True
+    return jsonify(result)
 
 
 # arguments in request path:
@@ -202,7 +229,7 @@ def apiGetElectionDetails(electionId):
         return jsonify(result)
     
     electionDetails['success']=True
-    return electionDetails
+    return jsonify(electionDetails)
 
 
 # arguments in request data:

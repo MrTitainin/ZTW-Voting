@@ -6,7 +6,7 @@
                     <td>{{ election.name }}</td>
                     <!--td>{{ election.date }}</td-->
                     <td>
-                        <button class="favorite" @click="vote(election)" :disabled="!election.active">Vote</button>
+                        <button class="favorite" @click="vote(election)" :disabled="!election.votable">Vote</button>
                         <button class="favorite" @click="results(election)" :disabled="election.active">Results</button>
                         <button class="favorite" @click="stop(election)" :disabled="!election.active" v-if="this.admin">End</button>
                     </td>

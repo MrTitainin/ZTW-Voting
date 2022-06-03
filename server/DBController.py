@@ -106,7 +106,8 @@ class DBController():
                 'electionId':election['ElectionId'],
                 'electionName':election['Name'],
                 'electionType':str(election['VoteType']),
-                'electionActive':not election['Finished']
+                'electionFinished':not election['Finished'],
+                'electionVotable':(not election['ElectionId'] in voted) and not election['Finished']
             })
                 
         

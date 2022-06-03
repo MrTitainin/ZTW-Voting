@@ -31,12 +31,14 @@ export default {
                     name: 'Wybory test',
                     active: true,
                     multipleChoice: false,
+                    votable:true,
                 },
                 {
                     id: 2,
                     name: 'Zakończone test',
                     active: false,
                     multipleChoice: true,
+                    votable:false,
                 },
             ],
             electionOptions: [
@@ -60,15 +62,34 @@ export default {
     methods: {
         login(usr) {
             this.user = usr
-            this.elections=usr.electionList
-            for(const election of this.elections){
-                election.id=election.electionId
-                election.name=election.electionName
-                election.active=election.electionActive
-                if (election.electionType=='approval')  
-                    election.multipleChoice=true
-                else   
-                    election.multipleChoice=false
+            this.getElectionList()
+        },
+        async getElectionList(){
+            try {
+                const response = await fetch(config.SERVICE_URL+"elections/list",{
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({sessionKey:this.user.sessionKey}),
+                });
+                const data = await response.json();
+                if (data.success){
+                    this.elections=data.electionList
+                    for(const election of this.elections){
+                        election.id=election.electionId
+                        election.name=election.electionName
+                        election.active=election.electionFinished
+                        election.votable=election.electionVotable
+                        if (election.electionType=='approval')  
+                            election.multipleChoice=true
+                        else   
+                            election.multipleChoice=false
+                    }
+                }
+            } catch (error) {
+                console.error(error);
             }
         },
         async showVoting(election) {
@@ -93,6 +114,7 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+            this.getElectionList()
             //this.selectedElection = election
         },
         async showResults(election) {
@@ -112,6 +134,7 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+            document.write(JSON.stringify(this.electionResults))
             //election.name
         },
         async submitVote(options, selected) {
@@ -138,6 +161,7 @@ export default {
                 console.error(error);
             }
             this.selectedElection = 0
+            this.getElectionList()
         },
         async startElection(election) {
             this.create = false;
@@ -166,6 +190,7 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+            this.getElectionList()
         },
         async endElection(electionId) {
             try {
@@ -184,6 +209,7 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+            this.getElectionList()
         },
         createElection(){
             this.create = true;
