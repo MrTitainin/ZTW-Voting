@@ -72,7 +72,9 @@ def apiLoginUser():
     
     result['success']=True
     result['sessionKey']=generateSessionKey(user['UserId'])
-    result['electionList']=dbConn.getElectionList(login)
+    result['electionList']=dbConn.getElectionList(user['UserId'])
+    if result['electionList'] is None:
+        result['electionList']=[]
     result['admin']=dbConn.isAdmin(user['UserId'])
     return jsonify(result)
 

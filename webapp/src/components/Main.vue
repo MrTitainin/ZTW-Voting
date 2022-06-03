@@ -101,7 +101,6 @@ export default {
                 const data = await response.json();
                 if (data.success){
                     this.electionResults=data
-                    document.write(JSON.stringify(this.electionResults))
                 }
             } catch (error) {
                 console.error(error);
