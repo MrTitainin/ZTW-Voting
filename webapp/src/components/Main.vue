@@ -140,11 +140,19 @@ export default {
             this.selectedElection = 0
         },
         async startElection(election) {
-            //TODO remap reqData
-            console.debug("starting");
             this.create = false;
-            const reqData={...election}
-            reqData.sessionKey=this.user.sessionKey
+            const reqData={
+                sessionKey:this.user.sessionKey,
+                electionName:election.name,
+                options:[]
+            }
+            if (election.multipleChoice=="true")
+                reqData.voteType="approval"
+            else
+                reqData.voteType="single"
+            for(const option of election.options)
+                reqData.options.push(option.description)
+
             try {
                 const response = await fetch(config.SERVICE_URL+"elections/start",{
                     method: "POST",
@@ -160,7 +168,6 @@ export default {
             }
         },
         async endElection(electionId) {
-            console.debug("ending")
             try {
                 const response = await fetch(config.SERVICE_URL+"elections/end",{
                     method: "PATCH",
