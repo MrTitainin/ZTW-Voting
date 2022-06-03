@@ -35,7 +35,6 @@ export default {
                 });
                 const res = await response.json();
                 if (res.success==false)    return 
-                res.login = "success!"
                 this.$emit('user:login', res)
             } catch (error) {
                 console.error(error);

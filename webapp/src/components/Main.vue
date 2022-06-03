@@ -1,8 +1,9 @@
 <template>
     <div>
         <LoginPanel @user:login="login" v-if="user==0"/>
-        <ElectionChoice @election:vote="showVoting" @election:results="showResults" :elections=this.elections v-if="user!=0 && selectedElection == 0"/>
-        <ElectionPanel @vote:submit="submitVote" :election=this.elections[0] :options=this.electionOptions v-if="selectedElection!=0"/>
+        <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create"/>
+        <ElectionPanel @vote:submit="submitVote" :election="this.elections[0]" :options="this.electionOptions" v-if="selectedElection!=0"/>
+        <CreateElection @election:submit="startElection" v-if="create"/>
     </div>
 </template>
 
@@ -12,14 +13,16 @@ import config from '@/config'
 import LoginPanel from './Login.vue'
 import ElectionChoice from './ElectionChoice.vue'
 import ElectionPanel from './Election.vue'
+import CreateElection from './CreateElection.vue'
 
 export default {
     name: 'MainScreen',
     components: {
-        LoginPanel,
-        ElectionChoice,
-        ElectionPanel
-    },
+    LoginPanel,
+    ElectionChoice,
+    ElectionPanel,
+    CreateElection
+},
     data() {
         return {
             elections: [
@@ -48,7 +51,8 @@ export default {
             ],
             electionResults:{},
             selectedElection: 0,
-            user: 0
+            user: 0,
+            create: false,
         }
     },
     props: {
@@ -137,6 +141,8 @@ export default {
         },
         async startElection(election) {
             //TODO remap reqData
+            console.debug("starting");
+            this.create = false;
             const reqData={...election}
             reqData.sessionKey=this.user.sessionKey
             try {
@@ -154,6 +160,7 @@ export default {
             }
         },
         async endElection(electionId) {
+            console.debug("ending")
             try {
                 const response = await fetch(config.SERVICE_URL+"elections/end",{
                     method: "PATCH",
@@ -171,6 +178,9 @@ export default {
                 console.error(error);
             }
         },
+        createElection(){
+            this.create = true;
+        }
     }
 }
 </script>
