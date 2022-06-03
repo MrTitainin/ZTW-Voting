@@ -2,7 +2,7 @@
     <div>
         <LoginPanel @user:login="login" v-if="user==0"/>
         <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create"/>
-        <ElectionPanel @vote:submit="submitVote" :election="this.elections[0]" :options="this.electionOptions" v-if="selectedElection!=0"/>
+        <ElectionPanel @vote:submit="submitVote" :election="selectedElection" :options="this.electionOptions" v-if="selectedElection!=0"/>
         <CreateElection @election:submit="startElection" v-if="create"/>
     </div>
 </template>
