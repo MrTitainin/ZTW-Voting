@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  server:
+    build: ./server
+    ports:
+      - "5123:5123"
+  webapp:
+    build: ./webapp
+    ports:
+      - "8000:8080"
