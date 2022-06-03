@@ -4,11 +4,12 @@ import random
 from typing import Optional
 from DBController import DBController
 from constants import *
+from flask_cors import CORS
 
 sessionKeys={'testSessionKey':0}
 dbConn=DBController()
 server = flask.Flask(__name__)
-
+CORS(server)
 
 # Request return format
 # Json dict containing:

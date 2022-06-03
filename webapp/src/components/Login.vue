@@ -20,10 +20,24 @@ export default {
         }
     },
     methods: {
-        handleSubmit() {
-            if(this.user.login != "root" || this.user.password != "toor") return
-            this.user.login = "success!"
-            this.$emit('user:login', this.user)
+        async handleSubmit() {
+            try {
+                let formData = new FormData();
+                formData.append('login', this.user.login);
+                formData.append('password', this.user.password);
+                
+                const response = await fetch("http://localhost:5123/api/users/login", {
+                method: "POST",
+                
+                body: formData,
+                });
+                const res = await response.json();
+                if (res.success==false)    return 
+                res.login = "success!"
+                this.$emit('user:login', res)
+            } catch (error) {
+                console.error(error);
+            }
         }
     },
     props: {

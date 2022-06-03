@@ -52,6 +52,16 @@ export default {
     methods: {
         login(usr) {
             this.user = usr
+            this.elections=usr.electionList
+            for(const election of this.elections){
+                election.id=election.electionId
+                election.name=election.electionName
+                election.active=election.electionActive
+                if (election.electionType=='approval')  
+                    election.multipleChoice=true
+                else   
+                    election.multipleChoice=false
+            }
         },
         showVoting(election) {
             // TODO options request

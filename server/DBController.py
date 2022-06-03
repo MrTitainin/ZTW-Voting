@@ -99,12 +99,17 @@ class DBController():
         
         conn.close()
 
-        result={}
+        result=[]
         voted=list(map(lambda res:res['ElectionId'],resultSet2))
         for election in resultSet1:
-            if not election['ElectionId'] in voted:
-                result['electionId']=election['ElectionId']
-                result['electionName']=election['Name']
+            if not election['ElectionId'] in voted or election['Finished']:
+                result.append({
+                    'electionId':election['ElectionId'],
+                    'electionName':election['Name'],
+                    'electionType':str(election['VoteType']),
+                    'electionActive':not election['Finished']
+                })
+                
         
         if len(result)==0:
             return None
