@@ -134,7 +134,7 @@ export default {
         },
         async startElection(election) {
             //TODO remap reqData
-            reqData={...election}
+            const reqData={...election}
             reqData.sessionKey=this.user.sessionKey
             try {
                 const response = await fetch("http://localhost:5123/api/elections/start",{
@@ -145,7 +145,7 @@ export default {
                     },
                     body: JSON.stringify(reqData),
                 });
-                const data = await response.json();
+                await response.json();
             } catch (error) {
                 console.error(error);
             }
@@ -163,7 +163,7 @@ export default {
                         electionId:electionId
                     }),
                 });
-                const data = await response.json();
+                await response.json();
             } catch (error) {
                 console.error(error);
             }
