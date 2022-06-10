@@ -8,7 +8,7 @@
                 <label class="text-emerald-200 sm:col-span-1 align-middle">Hasło </label>
                 <input v-model="user.password" type="text" class="sm:col-span-3 text-violet-600 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"/>
             </div>
-            <input type="submit" value="Zaloguj" class ="content-center text-emerald-100 mt-5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-emerald-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-slate-600 disabled:text-slate-200">
+            <input type="submit" value="Zaloguj" :disabled="empty" class ="content-center text-emerald-100 mt-5 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-emerald-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-slate-600 disabled:text-slate-200">
           </div>
         </div>
     </form>
@@ -45,6 +45,11 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+        }
+    },
+    computed: {
+        empty() {
+            return this.user.login === '' || this.user.password === ''
         }
     },
     props: {
