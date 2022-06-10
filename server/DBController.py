@@ -256,6 +256,7 @@ class DBController():
                 'optionName':option['Name'],
                 'voteCount':resultCount
             })
+        result['options'].sort(key=lambda o:o['voteCount'],reverse=True)
 
         conn.close()
         return result
