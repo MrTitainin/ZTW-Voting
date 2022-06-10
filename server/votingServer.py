@@ -82,6 +82,7 @@ def apiLoginUser():
     result['success']=True
     result['sessionKey']=token
     result['admin']=dbConn.isAdmin(user['UserId'])
+    result['voter']=dbConn.isVoter(user['UserId'])
     return jsonify(result)
 
 
