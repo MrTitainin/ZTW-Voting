@@ -144,6 +144,13 @@ export default {
             //election.name
         },
         async submitVote(options, selected) {
+            if (selected==-1){
+                selected=[]
+                options.forEach(option => {
+                    if (option.approved)
+                        selected.push(option.id)
+                });
+            }
             if (!Array.isArray(selected))
                 selected=[selected]
             try {
