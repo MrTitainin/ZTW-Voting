@@ -8,3 +8,7 @@ services:
     build: ./webapp
     ports:
       - "8000:8080"
+  authentication:
+    build: ./authentication
+    ports:
+      - "6123:6123"

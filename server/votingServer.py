@@ -5,6 +5,7 @@ from typing import Optional
 from DBController import DBController
 from constants import *
 from flask_cors import CORS
+import requests as req
 
 sessionKeys={'testSessionKey':0}
 dbConn=DBController()
@@ -56,6 +57,15 @@ def apiLoginUser():
         result['message']="Error: Login or Password empty. Please specify a login and password."
         return jsonify(result)
 
+    res=req.post(AUTHENTICATION_SERVER_ADRESS+f':{AUTHENTICATION_SERVER_PORT}'+"/api/authenticate"
+        ,data={"login":login,"password":password})
+    resData=res.json()
+    if(resData['success'] !=True):
+        result['success']=False
+        result['message']="Error: Authentication error:\n"+res['message']
+        return jsonify(result)
+    token=resData['sessionKey']
+
     user=dbConn.getUser(login)
     
     if user is None:
@@ -68,8 +78,9 @@ def apiLoginUser():
         result['message']= "Error: wrong login or password"
         return jsonify(result)
     
+    sessionKeys[token]=user['UserId']
     result['success']=True
-    result['sessionKey']=generateSessionKey(user['UserId'])
+    result['sessionKey']=token
     result['admin']=dbConn.isAdmin(user['UserId'])
     return jsonify(result)
 
