@@ -1,9 +1,10 @@
 <template>
     <div class="justify-center flex bg-emerald-900 items-center h-screen">
         <LoginPanel @user:login="login" v-if="user==0"/>
-        <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create"/>
+        <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create && !resultsVisible"/>
         <ElectionPanel @vote:submit="submitVote" :election="selectedElection" :options="this.electionOptions" v-if="selectedElection!=0"/>
         <CreateElection @election:submit="startElection" v-if="create"/>
+        <ElectionResults @results:hide="hideResults" :results="this.electionResults" v-if="resultsVisible"/>
     </div>
 </template>
 
@@ -14,6 +15,7 @@ import LoginPanel from './Login.vue'
 import ElectionChoice from './ElectionChoice.vue'
 import ElectionPanel from './Election.vue'
 import CreateElection from './CreateElection.vue'
+import ElectionResults from './ElectionResults.vue'
 
 export default {
     name: 'MainScreen',
@@ -21,7 +23,8 @@ export default {
     LoginPanel,
     ElectionChoice,
     ElectionPanel,
-    CreateElection
+    CreateElection,
+    ElectionResults
 },
     data() {
         return {
@@ -52,6 +55,7 @@ export default {
                 },
             ],
             electionResults:{},
+            resultsVisible:false,
             selectedElection: 0,
             user: 0,
             create: false,
@@ -130,11 +134,13 @@ export default {
                 const data = await response.json();
                 if (data.success){
                     this.electionResults=data
+                    this.resultsVisible=true
                 }
             } catch (error) {
                 console.error(error);
             }
-            document.write(JSON.stringify(this.electionResults))
+            
+            //document.getElementById("tsk").innerHTML = JSON.stringify(this.electionResults)
             //election.name
         },
         async submitVote(options, selected) {
@@ -213,6 +219,9 @@ export default {
         },
         createElection(){
             this.create = true;
+        },
+        hideResults(){
+            this.resultsVisible = false;
         }
     }
 }
