@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="justify-center flex bg-emerald-900 items-center h-screen">
         <LoginPanel @user:login="login" v-if="user==0"/>
         <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create"/>
         <ElectionPanel @vote:submit="submitVote" :election="selectedElection" :options="this.electionOptions" v-if="selectedElection!=0"/>
