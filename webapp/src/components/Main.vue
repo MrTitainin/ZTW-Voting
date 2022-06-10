@@ -1,9 +1,9 @@
 <template>
     <div class="justify-center flex bg-emerald-900 items-center h-screen">
         <LoginPanel @user:login="login" v-if="user==0"/>
-        <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" v-if="user!=0 && selectedElection == 0 && !create && !resultsVisible"/>
-        <ElectionPanel @vote:submit="submitVote" :election="selectedElection" :options="this.electionOptions" v-if="selectedElection!=0"/>
-        <CreateElection @election:submit="startElection" v-if="create"/>
+        <ElectionChoice @election:vote="showVoting" @election:results="showResults" @election:stop="endElection" @election:create="createElection" :elections="this.elections" :admin="this.user.admin" :voter="this.user.voter" v-if="user!=0 && selectedElection == 0 && !create && !resultsVisible"/>
+        <ElectionPanel @vote:submit="submitVote" @vote:cancel="cancelVote" :election="selectedElection" :options="this.electionOptions" v-if="selectedElection!=0"/>
+        <CreateElection @election:submit="startElection" @election:cancel="cancelCreate" v-if="create"/>
         <ElectionResults @results:hide="hideResults" :results="this.electionResults" v-if="resultsVisible"/>
     </div>
 </template>
@@ -226,6 +226,12 @@ export default {
         },
         createElection(){
             this.create = true;
+        },
+        cancelCreate(){
+            this.create = false;
+        },
+        cancelVote(){
+            this.selectedElection = 0;
         },
         hideResults(){
             this.resultsVisible = false;
